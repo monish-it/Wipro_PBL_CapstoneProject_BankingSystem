@@ -1,0 +1,13 @@
+CREATE TABLE CUSTOMERS_TB                                    
+ (                                                           
+  C_USER_ID VARCHAR(6) NOT NULL,                             
+  C_PASS VARCHAR(6) NOT NULL,                                
+  ACNT_NUM NUMERIC(10,0) NOT NULL PRIMARY KEY,               
+  CUST_NAME VARCHAR(26) NOT NULL,                            
+  DOB DATE NOT NULL WITH DEFAULT,                            
+  DO_OPENING_ACNT DATE NOT NULL WITH DEFAULT,                
+  CUST_ADDR VARCHAR(43),                                     
+  CUST_TYPE CHAR(1) CHECK(CUST_TYPE IN  ('R','C')),          
+  BAL_AMOUNT NUMERIC(8,0)                                    
+ )IN WPR061DB.WPR061TS;                                      
+CREATE UNIQUE INDEX IND_ACNTNUM ON CUSTOMERS_TB(ACNT_NUM);   

@@ -1,0 +1,297 @@
+      *****************************                                     
+       IDENTIFICATION DIVISION.                                         
+      *****************************                                     
+       PROGRAM-ID. ADDUSER. 
+       AUTHOR. GRP 6.                                            
+       DATE-WRITTEN. 05/05/2022.                                        
+       DATE-COMPILED. 05/05/2022.                                       
+      ******************************************************************
+      *       PROLOGUE.                                                 
+      *       PROGRAM NAME        :         ADDUSER                     
+      *       PROJECT NAME        :         BANKING SYSTEM              
+      *       AUTHOR              :         GROUP 6                     
+      *       DATE OF CREATION    :         05/05/2022                  
+      *       FUNCTION            :         TO ADD NEW CUSTOMER         
+      *       TRANSACTION ID USED :         BVR5                        
+      *                                                                 
+      *       MAP USED            :         NEWCS                       
+      *       DCLGEN              :         CUSTB , UCETB               
+      ******************************************************************
+      *****************************                                     
+       DATA DIVISION.                                                   
+      *****************************                                     
+      *****************************                                     
+       WORKING-STORAGE SECTION.                                         
+      *****************************                                     
+           COPY NEWCS.                                                  
+           COPY DFHAID.                                                 
+           EXEC SQL                                                     
+               INCLUDE SQLCA                                            
+           END-EXEC.                                                    
+           EXEC SQL                                                     
+               INCLUDE CUSTB                                            
+           END-EXEC.                                                    
+           EXEC SQL                                                     
+               INCLUDE UCETB                                            
+           END-EXEC.                                                    
+       77 WS-DTM PIC S9(15) COMP.                                       
+       77 WS-DT  PIC X(10).                                             
+       77 WS-TM  PIC X(8).                                              
+       77 WS-CA  PIC X(10).                                             
+       01 CUST-NAME PIC X(26).                                          
+       01 CUST-ADDR PIC X(43).                                          
+       01 CUST-ID PIC X(6).                                             
+       01 CUST-PASS PIC X(6).                                           
+       01 HV-ACNTIND PIC S9(4) COMP.                                    
+       01 WS-DTN.                                                       
+          02 YEAR PIC 9(4).                                             
+          02 FILLER PIC X.                                              
+          02 MON PIC 9(2).                                              
+          02 FILLER PIC X.                                              
+          02 DT PIC 9(2).                                               
+       01 DATEN.                                                        
+          02 YY PIC 9(4).                                               
+          02 FILLER PIC X.                                              
+          02 MM PIC 9(2).                                               
+          02 FILLER PIC X.                                              
+          02 DD PIC 9(2).                                               
+       01 AGE PIC 9(3).                                                 
+      *****************************                                     
+       PROCEDURE DIVISION.                                              
+      *****************************                                     
+      *-------------------------                                        
+       0584-MAIN-PARA.                                                  
+      *-------------------------                                        
+           MOVE LOW-VALUES TO UPDCS2O.                                  
+           INITIALIZE DCLCUSTOMERS-TB.                                  
+           IF EIBCALEN = 0                                              
+              PERFORM 0645-SEND-PARA                                    
+           ELSE                                                         
+              PERFORM 1210-RECEIVE-PARA                                 
+              PERFORM 0645-SEND-PARA                                    
+           END-IF.                                                      
+           PERFORM 0609-MAIN-PARA-EXIT.                                 
+      *-------------------------                                        
+       0609-MAIN-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+       0612-DATE-PARA.                                                  
+      *-------------------------                                        
+           EXEC CICS                                                    
+               ASKTIME                                                  
+               ABSTIME(WS-DTM)                                          
+           END-EXEC.                                                    
+           EXEC CICS                                                    
+               FORMATTIME                                               
+               ABSTIME(WS-DTM)                                          
+               DATESEP('-')                                             
+               YYYYMMDD(WS-DT)                                          
+               TIMESEP(':')                                             
+               TIME(WS-TM)                                              
+           END-EXEC.                                                    
+           PERFORM 0641-DATE-PARA-EXIT.                                 
+      *-------------------------                                        
+       0641-DATE-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       0645-SEND-PARA.                                                  
+      *-------------------------                                        
+           PERFORM 0612-DATE-PARA.                                      
+                      PERFORM 1309-GET-ACNT-NO-PARA.                               
+           MOVE WS-DT TO DATEO.                                         
+           MOVE WS-TM TO TIMEO.                                         
+           MOVE WS-DT TO DOAO.                                          
+           EXEC CICS                                                    
+               SEND MAP('UPDCS2')                                       
+                    MAPSET('NEWCS')                                     
+                    FROM(UPDCS2O)                                       
+                    ERASE                                               
+                    FREEKB                                              
+           END-EXEC.                                                    
+           MOVE 'HI' TO WS-CA.                                          
+           EXEC CICS                                                    
+               RETURN                                                   
+               TRANSID('BVR5')                                          
+               COMMAREA(WS-CA)                                          
+           END-EXEC.                                                    
+           PERFORM 1206-SEND-PARA-EXIT.                                 
+      *-------------------------                                        
+       1206-SEND-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1210-RECEIVE-PARA.                                               
+      *-------------------------                                        
+                 EXEC CICS                                                    
+               RECEIVE MAP('UPDCS2')                                    
+                    MAPSET('NEWCS')                                     
+                    INTO(UPDCS2I)                                       
+           END-EXEC.                                                    
+           EVALUATE EIBAID                                              
+              WHEN DFHPF5                                               
+                  MOVE LOW-VALUES TO UPDCS2O                            
+              WHEN DFHPF1                                               
+                  MOVE 'PRESS F9 TO ADD CUSTOMER' TO MSGO               
+              WHEN DFHPF4                                               
+                  PERFORM 1267-TRANSFER-PARA                            
+              WHEN DFHPF9                                               
+                  PERFORM 1500-INSERT-PARA                              
+              WHEN OTHER                                                
+                  MOVE 'ENTER CORRECT PF KEYS' TO MSGO                  
+           END-EVALUATE.                                                
+           PERFORM 1263-RECEIVE-PARA-EXIT.                              
+      *-------------------------                                        
+       1263-RECEIVE-PARA-EXIT.                                          
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1267-TRANSFER-PARA.                                              
+      *-------------------------                                        
+                 EXEC CICS XCTL                                               
+               PROGRAM('OPTPGM')                                        
+           END-EXEC.                                                    
+      *-------------------------                                        
+       1309-GET-ACNT-NO-PARA.                                           
+      *-------------------------                                        
+           EXEC SQL                                                     
+               SELECT MAX(ACNT_NUM) + 1 INTO :HV-ACNT-NUM :HV-ACNTIND   
+               FROM CUSTOMERS_TB                                        
+           END-EXEC.                                                    
+           IF HV-ACNTIND < ZEROS                                        
+              MOVE 1 TO HV-ACNT-NUM                                     
+           END-IF.                                                      
+           MOVE HV-ACNT-NUM TO ACCNO.                                   
+           PERFORM 1410-GET-ACNT-NO-PARA-EXIT.                          
+      *-------------------------                                        
+       1410-GET-ACNT-NO-PARA-EXIT.                                      
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1500-INSERT-PARA.                                                
+      *-------------------------                                        
+           PERFORM 1626-NAME-REDEFINE-PARA.                             
+           PERFORM 2100-ADDR-REDEFINE-PARA.                             
+           PERFORM 0612-DATE-PARA.                                      
+           PERFORM 1309-GET-ACNT-NO-PARA.                               
+           MOVE CUST-NAME TO HV-CUST-NAME-TEXT.                         
+           MOVE LENGTH OF CUST-NAME TO HV-CUST-NAME-LEN.                
+           MOVE CUST-ADDR TO HV-CUST-ADDR-TEXT.                         
+           MOVE LENGTH OF CUST-ADDR TO HV-CUST-ADDR-LEN.                
+           MOVE DOBI TO HV-DOB.                                         
+           MOVE WS-DT TO HV-DO-OPENING-ACNT.                            
+           MOVE CUSTI TO HV-CUST-TYPE.                                  
+           MOVE OPNDI TO HV-BAL-AMOUNT.                                 
+           PERFORM 3000-GEN-ID-PASS-PARA.                               
+           MOVE CUST-ID TO HV-C-USER-ID-TEXT.                           
+           MOVE LENGTH OF CUST-ID TO HV-C-USER-ID-LEN.                  
+           MOVE CUST-PASS TO HV-C-PASS-TEXT.                            
+           MOVE LENGTH OF CUST-PASS TO HV-C-PASS-LEN.                   
+           PERFORM 3900-CHECK-DATA-PARA.                                
+           EXEC SQL                                                     
+                 INSERT INTO WPR061.CUSTOMERS_TB (                      
+                   C_USER_ID,                                           
+                   C_PASS,                                              
+                   ACNT_NUM,                                            
+                   CUST_NAME,                                           
+                   DOB,                                                 
+                   DO_OPENING_ACNT,                                     
+                   CUST_ADDR,                                           
+                   CUST_TYPE,                                           
+                   BAL_AMOUNT                                           
+                 )                                                      
+                 VALUES (                                               
+                   :HV-C-USER-ID,                                       
+                   :HV-C-PASS,                                          
+                   :HV-ACNT-NUM,                                        
+                   :HV-CUST-NAME,                                       
+                   :HV-DOB,                                             
+                   :HV-DO-OPENING-ACNT,                                 
+                   :HV-CUST-ADDR,                                       
+                   :HV-CUST-TYPE,                                       
+                   :HV-BAL-AMOUNT                                       
+                 )                                                      
+            END-EXEC.                                                   
+            EVALUATE SQLCODE                                            
+              WHEN 0                                                    
+                EXEC SQL                                                
+                    INSERT INTO WPR061.P_TABLE                          
+                           VALUES(:HV-C-USER-ID,:HV-C-PASS,'A')         
+                END-EXEC                                                
+                MOVE LOW-VALUES TO UPDCS2O                              
+                MOVE 'CUSTOMER ADDED AND SHARE USER ID AND PASS' TO MSGO
+                STRING 'USER ID :' DELIMITED BY SIZE                    
+                       HV-C-USER-ID DELIMITED BY SIZE                   
+                       ' ' DELIMITED BY SIZE                            
+                       'PASS :' DELIMITED BY SIZE                       
+                       HV-C-PASS DELIMITED  BY SIZE                     
+                       INTO MSG1O                                       
+                END-STRING                                              
+              WHEN -545                                                 
+                MOVE 'ENTER CORRECT CUSTOMER TYPE(R,C)' TO MSG1O        
+              WHEN -180                                                 
+                MOVE 'ENTER CORRECT D.O.B' TO MSG1O                     
+              WHEN OTHER                                                
+                MOVE 'FAIL TO ADD ACCOUNT.RETRY!' TO MSGO               
+            END-EVALUATE.                                               
+            PERFORM 1621-INSERT-PARA-EXIT.                              
+      *-------------------------                                        
+       1621-INSERT-PARA-EXIT.                                           
+            EXIT.                                                       
+      *-------------------------                                        
+      *-------------------------                                        
+       1626-NAME-REDEFINE-PARA.                                         
+      *-------------------------                                        
+           STRING FISNI DELIMITED BY SIZE                               
+                  " " DELIMITED BY SIZE                                 
+                  MIDNI DELIMITED BY SIZE                               
+                  " " DELIMITED BY SIZE                                 
+                  LASTNI DELIMITED BY SIZE                              
+              INTO CUST-NAME                                            
+           END-STRING.                                                  
+           INSPECT CUST-NAME REPLACING ALL '_' BY SPACE.                
+      *-------------------------                                        
+       2100-ADDR-REDEFINE-PARA.                                         
+      *-------------------------                                        
+           STRING CUSAI DELIMITED BY SIZE                               
+                  " " DELIMITED BY SIZE                                 
+                  ADDL1I DELIMITED BY SIZE                              
+                  " " DELIMITED BY SIZE                                 
+                  ADDL2I DELIMITED BY SIZE                              
+                  " " DELIMITED BY SIZE                                 
+                  ADDL3I DELIMITED BY SIZE                              
+              INTO CUST-ADDR                                            
+           END-STRING.                                                  
+           INSPECT CUST-ADDR REPLACING ALL '_' BY SPACE.                
+      *-------------------------                                        
+       3000-GEN-ID-PASS-PARA.                                           
+      *-------------------------                                        
+           STRING CUST-NAME(1:4) DELIMITED BY SIZE                      
+                  DOBI(6:2) DELIMITED BY SIZE                           
+                  INTO CUST-ID                                          
+           END-STRING.                                                  
+           STRING DOBI(9:2) DELIMITED BY SIZE                           
+                  CUST-NAME(19:4) DELIMITED BY SIZE                     
+                  INTO CUST-PASS                                        
+           END-STRING.                                                  
+      *-------------------------                                        
+       3900-CHECK-DATA-PARA.                                            
+      *-------------------------                                        
+           IF CUST-ADDR = SPACES OR CUST-NAME = SPACES                  
+             MOVE 'FIELD EMPTY, PROVIDE DATA' TO MSGO                   
+             PERFORM 0645-SEND-PARA                                     
+           END-IF.                                                      
+           MOVE WS-DT TO WS-DTN.                                        
+           MOVE DOBI TO DATEN.                                          
+           IF DOBI = '__________'                                       
+              MOVE 'PROVIDE D.O.B' TO MSGO                              
+              PERFORM 0645-SEND-PARA                                    
+           END-IF.                                                      
+           COMPUTE AGE = YEAR - YY                                      
+           IF AGE < 018                                                 
+             MOVE 'AGE IS LESS THEN 18' TO MSGO                         
+             PERFORM 0645-SEND-PARA                                     
+           END-IF.                                                      
+      ******************************************************************
+      *                          END OF PROGRAM                        *
+      ******************************************************************

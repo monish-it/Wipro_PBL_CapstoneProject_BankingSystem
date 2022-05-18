@@ -1,0 +1,138 @@
+      *****************************                                     
+       IDENTIFICATION DIVISION.                                         
+       PROGRAM-ID. OPTPGM.   
+       AUTHOR. GRP 6.                                            
+       DATE-WRITTEN. 02/05/2022.                                        
+       DATE-COMPILED. 04/05/2022.                                       
+      ******************************************************************
+      *       PROLOGUE.                                                 
+      *       PROGRAM NAME        :         OPTPGM                      
+      *       PROJECT NAME        :         BANKING SYSTEM              
+      *       AUTHOR              :         GROUP 6                     
+      *       DATE OF CREATION    :         22/05/2022                  
+      *       FUNCTION            :         OPTION FOR ADD OR DELETE    
+      *       TRANSACTION ID USED :         BVR3                        
+      *                                                                 
+      *       MAP USED            :         MAINSC                      
+      *                                                                 
+      ***************************************************************** 
+      *****************************                                     
+       DATA DIVISION.                                                   
+      *****************************                                     
+      *****************************                                     
+       WORKING-STORAGE SECTION.                                         
+      *****************************                                     
+           COPY MAINSC.                                                 
+           COPY DFHAID.                                                 
+       77 WS-DTM PIC S9(15) COMP.                                       
+       77 WS-DT  PIC X(10).                                             
+       77 WS-TM  PIC X(8).                                              
+       77 WS-STR PIC X(10).                                             
+       77 WS-CA  PIC X(10).                                             
+       77 WS-ID  PIC X(4).                                                    
+      *****************************                                     
+       PROCEDURE DIVISION.                                              
+      *****************************                                     
+      *-------------------------                                        
+       0603-MAIN-PARA.                                                  
+      *-------------------------                                        
+           MOVE LOW-VALUES TO MAINMO.                                   
+           IF EIBCALEN = 0                                              
+              PERFORM 0677-SEND-PARA                                    
+           ELSE                                                         
+              PERFORM 1213-RECEIVE-PARA                                 
+              PERFORM 0677-SEND-PARA                                    
+           END-IF.                                                      
+           PERFORM 0614-MAIN-PARA-EXIT.                                 
+      *-------------------------                                        
+       0614-MAIN-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       0619-DATE-PARA.                                                  
+      *-------------------------                                        
+           EXEC CICS                                                    
+               ASKTIME                                                  
+               ABSTIME(WS-DTM)                                          
+           END-EXEC.                                                    
+           EXEC CICS                                                    
+               FORMATTIME                                               
+               ABSTIME(WS-DTM)                                          
+               DATESEP('-')                                             
+               YYYYMMDD(WS-DT)                                          
+               TIMESEP(':')                                             
+               TIME(WS-TM)                                              
+           END-EXEC.                                                    
+           PERFORM 0673-DATE-PARA-EXIT.                                 
+      *-------------------------                                        
+       0673-DATE-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       0677-SEND-PARA.                                                  
+      *-------------------------                                        
+           PERFORM 0619-DATE-PARA THRU 0673-DATE-PARA-EXIT.             
+           MOVE WS-DT TO DATEO.                                         
+           MOVE WS-TM TO TIMEO.                                         
+           EXEC CICS                                                    
+               SEND MAP('MAINM')                                        
+                    MAPSET('MAINSC')                                    
+                    FROM(MAINMO)                                        
+                    ERASE                                               
+                    FREEKB                                              
+           END-EXEC.                                                    
+           MOVE 'HI' TO WS-CA.                                          
+           EXEC CICS                                                    
+               RETURN                                                   
+               TRANSID('BVR3')                                          
+               COMMAREA(WS-CA)                                          
+           END-EXEC.                                                    
+           PERFORM 1209-SEND-PARA-EXIT.                                 
+      *-------------------------                                        
+       1209-SEND-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1213-RECEIVE-PARA.                                               
+      *-------------------------                                        
+           EXEC CICS                                                    
+               RECEIVE MAP('MAINM')                                     
+                    MAPSET('MAINSC')                                    
+                    INTO(MAINMI)                                        
+           END-EXEC.                                                    
+           EVALUATE EIBAID                                              
+              WHEN DFHPF5                                               
+                  MOVE LOW-VALUES TO OPTNO                              
+              WHEN DFHPF6                                               
+                  MOVE 'BVR1' TO WS-ID                                  
+                  PERFORM 1308-TRANSFER-PARA                            
+              WHEN DFHENTER                                             
+                  IF OPTNI = 1                                          
+                    MOVE 'BVR5' TO WS-ID                                
+                    PERFORM 1308-TRANSFER-PARA                          
+                  END-IF                                                
+                  IF OPTNI = 2                                          
+                    MOVE 'BVR6' TO WS-ID                                
+                    PERFORM 1308-TRANSFER-PARA                          
+                  END-IF                                                
+                  IF NOT OPTNI = 1 OR OPTNI = 2                         
+                     MOVE 'ENTER VALID OPTION' TO MSGO                  
+                  END-IF                                                
+              WHEN OTHER                                                
+                  MOVE 'ENTER CORRECT PF KEYS' TO MSGO                  
+           END-EVALUATE.                                                
+           PERFORM 1304-RECEIVE-PARA-EXIT.                              
+      *-------------------------                                        
+       1304-RECEIVE-PARA-EXIT.                                          
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1308-TRANSFER-PARA.                                              
+      *-------------------------                                        
+           EXEC CICS                                                    
+               RETURN                                                   
+               TRANSID(WS-ID)                                           
+           END-EXEC.                                                    
+      ******************************************************************
+      *                          END OF PROGRAM                        *
+      ******************************************************************

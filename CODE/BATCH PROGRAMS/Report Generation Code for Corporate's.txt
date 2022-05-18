@@ -1,0 +1,191 @@
+**************************            
+ IDENTIFICATION DIVISION.             
+**************************            
+ PROGRAM-ID. REPORT1.                 
+**************************            
+ ENVIRONMENT DIVISION.                
+**************************            
+ INPUT-OUTPUT SECTION.                
+**************************            
+ FILE-CONTROL.                        
+**************************            
+     SELECT OUTFILE ASSIGN TO DD1     
+     ORGANIZATION IS SEQUENTIAL       
+     ACCESS IS SEQUENTIAL             
+     FILE STATUS IS WS-FS.            
+**************************            
+ DATA DIVISION.                       
+**************************            
+ FILE SECTION.                        
+**************************            
+ FD OUTFILE.                          
+ 01 OUT-REC-FILE.    
+    02 OUT-REC PIC X(80).                                        
+**************************                                       
+ WORKING-STORAGE SECTION.                                        
+**************************                                       
+     EXEC SQL                                                    
+        INCLUDE SQLCA                                            
+     END-EXEC.                                                   
+     EXEC SQL                                                    
+        INCLUDE CUSTB                                            
+     END-EXEC.                                                   
+     EXEC SQL                                                    
+        DECLARE C1 CURSOR                                        
+        FOR                                                      
+        SELECT ACNT_NUM, CUST_NAME, BAL_AMOUNT                   
+        FROM WPR061.CUSTOMERS_TB WHERE CUST_TYPE = 'C' AND       
+        C_USER_ID IN (SELECT U_USER_ID FROM WPR061.P_TABLE WHERE 
+        U_STATUS = 'A') AND                                      
+        C_PASS IN (SELECT U_PASS FROM WPR061.P_TABLE WHERE       
+        U_STATUS = 'A')                                          
+     END-EXEC.                                                   
+ 77 I PIC 9(2) VALUE 0.                                          
+ 77 WS-FS PIC 9(2).                                              
+ 01 WS-DATE.                                                     
+    02 YY PIC 9(2).                                              
+    02 MM PIC 9(2).  
+    02 DD PIC 9(2).                                        
+ 01 BR-LINE.                                               
+    02 BR-LINEX PIC X(1) OCCURS 80 TIMES VALUE '*'.        
+ 01 MAIN-HEADING.                                          
+    02 FILLER  PIC X(26) VALUE SPACES.                     
+    02 HEAD    PIC X(14) VALUE 'BANKING SYSTEM'.           
+    02 FILLER  PIC X(17) VALUE SPACES.                     
+    02 DATET   PIC X(7) VALUE 'DATE : '.                   
+    02 RP-DATE.                                            
+       03 DD PIC 9(2).                                     
+       03 FILLER PIC X VALUE '/'.                          
+       03 MM PIC 9(2).                                     
+       03 FILLER PIC X VALUE '/'.                          
+       03 YY PIC 9(2).                                     
+    02 FILLER PIC X(8) VALUE SPACES.                       
+ 01 REPORT-HEADING.                                        
+    02 TOPIC   PIC X(38).                                  
+    02 UDATE   PIC X(10).                                  
+    02 FILLER  PIC X(9) VALUE SPACES.                      
+    02 PAGET   PIC X(7) VALUE 'PAGE : '.                   
+    02 RP-PAGE PIC 99.                                     
+ 01 COLUMN-HEADING.                                        
+    02 FILLER PIC X(5) VALUE SPACES.                       
+    02 HEAD1  PIC X(14) VALUE 'ACCOUNT NUMBER'.            
+    02 FILLER PIC X(9) VALUE SPACES.  
+    02 HEAD2  PIC X(13) VALUE 'CUSTOMER NAME'.       
+    02 FILLER PIC X(16) VALUE SPACES.                
+    02 HEAD3  PIC X(7)  VALUE 'BALANCE'.             
+ 01 FOOTER-HEADING.                                  
+    02 FILLER PIC XX VALUE SPACES.                   
+    02 FOOT-TOPIC PIC X(33).                         
+    02 CUST-CNT PIC 99.                              
+    02 FILLER PIC X(6).                              
+    02 TOT-BALT PIC X(16) VALUE 'TOTAL BALANCE : '.  
+    02 TOT-BAL PIC 9(10).99 .                        
+ 01 OVERALL-AMOUNT-HEADING.                          
+    02 FILLER PIC X(21) VALUE SPACES.                
+    02 OVR-AMT PIC X(17) VALUE 'OVERALL AMOUNT : '.  
+    02 OVRALL-TOT PIC 9(10).99 .                     
+ 01 DATA-RETRIEVE.                                   
+    02 FILLER PIC X(5) VALUE SPACES.                 
+    02 ACNT-NUM PIC 9(10).                           
+    02 FILLER PIC X(5) VALUE SPACES.                 
+    02 CUS-NAME PIC X(28).                           
+    02 FILLER PIC X(6) VALUE SPACES.                 
+    02 BALANCE  PIC 9(9).99  .                       
+ 77 P-TOTAL PIC 9(9).                                
+ 77 F-TOTAL PIC 9(9).                                
+**************************                           
+ PROCEDURE DIVISION.                                 	
+**************************                                     
+*-------------------------                                     
+ 1025-MAIN-PARA.                                               
+*-------------------------                                     
+     ACCEPT UDATE.                                             
+     ACCEPT WS-DATE FROM DATE.                                 
+     MOVE CORRESPONDING WS-DATE TO RP-DATE.                    
+     MOVE 'DAILY REPORT OF CORPORATE CUSTOMER ON ' TO TOPIC.   
+     INITIALIZE DCLCUSTOMERS-TB.                               
+     MOVE 0 TO CUST-CNT.                                       
+     MOVE 0 TO P-TOTAL.                                        
+     MOVE 0 TO F-TOTAL.                                        
+     MOVE 1 TO RP-PAGE.                                        
+     PERFORM 1050-OPEN-PARA.                                   
+     PERFORM 2400-HEADING-PARA.                                
+     PERFORM 3100-WRITE-PARA UNTIL SQLCODE = 100.              
+*-------------------------                                     
+ 1050-OPEN-PARA.                                               
+*-------------------------                                     
+     OPEN OUTPUT OUTFILE.                                      
+     EXEC SQL                                                  
+         OPEN C1                                               
+     END-EXEC.                                                 
+*------------------------                                      
+ 1100-FETCH-PARA.       
+*-------------------------                          
+     EXEC SQL                                       
+        FETCH C1                                    
+        INTO                                        
+        :HV-ACNT-NUM,                               
+        :HV-CUST-NAME,                              
+        :HV-BAL-AMOUNT                              
+     END-EXEC.                                      
+*-------------------------                          
+ 1900-CLOSE-PARA.                                   
+*-------------------------                          
+     EXEC SQL                                       
+        CLOSE C1                                    
+     END-EXEC.                                      
+     CLOSE OUTFILE.                                 
+*-------------------------                          
+ 2400-HEADING-PARA.                                 
+*-------------------------                          
+     WRITE OUT-REC-FILE FROM BR-LINE.               
+     WRITE OUT-REC-FILE FROM MAIN-HEADING.          
+     WRITE OUT-REC-FILE FROM REPORT-HEADING.        
+     WRITE OUT-REC-FILE FROM BR-LINE.               
+     WRITE OUT-REC-FILE FROM COLUMN-HEADING.        
+     WRITE OUT-REC-FILE FROM BR-LINE.               
+*-------------------------      
+ 3100-WRITE-PARA.                                          
+*-------------------------                                 
+     PERFORM 1100-FETCH-PARA.                              
+     IF CUST-CNT = 6 AND SQLCODE = 0                       
+       PERFORM 4585-SKIP-PARA 9 TIMES                      
+       COMPUTE RP-PAGE = RP-PAGE + 1                       
+       PERFORM 2400-HEADING-PARA                           
+       MOVE ZERO TO CUST-CNT                               
+       MOVE ZEROS TO P-TOTAL                               
+     END-IF.                                               
+     IF SQLCODE = 0                                        
+         MOVE HV-ACNT-NUM TO ACNT-NUM                      
+         MOVE HV-CUST-NAME TO CUS-NAME                     
+         MOVE HV-BAL-AMOUNT TO BALANCE                     
+         WRITE OUT-REC-FILE FROM DATA-RETRIEVE             
+         COMPUTE CUST-CNT = CUST-CNT + 1                   
+         COMPUTE P-TOTAL = P-TOTAL + HV-BAL-AMOUNT         
+         COMPUTE F-TOTAL = F-TOTAL + HV-BAL-AMOUNT         
+         MOVE P-TOTAL TO TOT-BAL                           
+         MOVE F-TOTAL TO OVRALL-TOT                        
+     END-IF.                                               
+     IF SQLCODE = 100 AND CUST-CNT < 6                     
+        PERFORM 4600-FOOTER-PARA                           
+     END-IF.                                               
+     IF SQLCODE = 100           
+        WRITE OUT-REC-FILE FROM OVERALL-AMOUNT-HEADING         
+        PERFORM 1900-CLOSE-PARA                                
+        STOP RUN                                               
+     END-IF.                                                   
+     IF CUST-CNT = 6                                           
+        PERFORM 4600-FOOTER-PARA                               
+     END-IF.                                                   
+*-------------------------                                     
+ 4585-SKIP-PARA.                                               
+*-------------------------                                     
+     MOVE SPACES TO OUT-REC-FILE.                              
+     WRITE OUT-REC-FILE.                                       
+*-------------------------                                     
+ 4600-FOOTER-PARA.                                             
+*-------------------------                                     
+     MOVE 'TOTAL NO OF CORPORATE CUSTOMER : ' TO FOOT-TOPIC.   
+     WRITE OUT-REC-FILE FROM BR-LINE.                          
+     WRITE OUT-REC-FILE FROM FOOTER-HEADING.                   
+     WRITE OUT-REC-FILE FROM BR-LINE.                          

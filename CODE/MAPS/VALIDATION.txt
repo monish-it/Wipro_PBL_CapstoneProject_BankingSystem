@@ -1,0 +1,35 @@
+VALDM  DFHMSD  TYPE=&SYSPARM,LANG=COBOL,MODE=INOUT,CTRL=FREEKB,        *
+               STORAGE=AUTO,TIOAPFX=YES                                 
+ULOGIN DFHMDI  SIZE=(24,80),LINE=1,COLUMN=1                             
+       DFHMDF  POS=(2,30),INITIAL='BANKING SYSTEM',                    *
+               ATTRB=PROT,LENGTH=16                                     
+       DFHMDF  POS=(3,30),INITIAL='**************',                    *
+               ATTRB=PROT,LENGTH=16                                     
+HEADV  DFHMDF  POS=(5,25),INITIAL=' ',                                 *
+               ATTRB=PROT,LENGTH=25,PICOUT='X(25)'                      
+       DFHMDF  POS=(9,25),INITIAL='USER ID  :',LENGTH=10,ATTRB=PROT     
+USER   DFHMDF  POS=(9,39),INITIAL='______',LENGTH=6,                   *
+               ATTRB=(IC,UNPROT,FSET),PICIN='9(6)'                      
+       DFHMDF  POS=(9,46),INITIAL='',LENGTH=1,                         *
+               ATTRB=ASKIP                                              
+       DFHMDF  POS=(11,25),INITIAL='PASSWORD :',LENGTH=10,ATTRB=PROT    
+PASS   DFHMDF  POS=(11,39),INITIAL='______',LENGTH=6,                  *
+               ATTRB=UNPROT,PICIN='X(6)'                                
+       DFHMDF  POS=(11,46),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+       DFHMDF  POS=(14,29),INITIAL='PRESS ENTER TO LOGIN',             *
+               LENGTH=21,ATTRB=PROT                                     
+MSG    DFHMDF  POS=(20,10),INITIAL=' ',LENGTH=40,ATTRB=PROT,           *
+               PICOUT='X(40)'                                           
+       DFHMDF  POS=(2,60),INITIAL='DATE : ',LENGTH=6,ATTRB=PROT         
+DATE   DFHMDF  POS=(2,67),INITIAL='__________',LENGTH=10,ATTRB=PROT,   *
+               PICOUT='X(10)'                                           
+       DFHMDF  POS=(4,60),INITIAL='TIME : ',LENGTH=6,ATTRB=PROT         
+TIME   DFHMDF  POS=(4,67),INITIAL='________',LENGTH=8,ATTRB=PROT,      *
+               PICOUT='X(8)'                                            
+       DFHMDF  POS=(23,7),INITIAL='F4 : GOBACK ',LENGTH=12,            *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(23,67),INITIAL='F5 : CLEAR',LENGTH=10,             *
+               ATTRB=PROT                                               
+       DFHMSD  TYPE=FINAL                                               
+               END                                                      

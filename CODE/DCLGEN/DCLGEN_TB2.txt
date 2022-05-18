@@ -1,0 +1,64 @@
+******************************************************************
+* DCLGEN TABLE(WPR061.CUSTOMERS_TB)                              *
+*        LIBRARY(WPR061.FEB21.PROJ.DCLGEN(CUSTB))                *
+*        ACTION(REPLACE)                                         *
+*        LANGUAGE(COBOL)                                         *
+*        NAMES(HV-)                                              *
+*        QUOTE                                                   *
+*        COLSUFFIX(YES)                                          *
+* ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+******************************************************************
+     EXEC SQL DECLARE WPR061.CUSTOMERS_TB TABLE                   
+     ( C_USER_ID                      VARCHAR(6) NOT NULL,        
+       C_PASS                         VARCHAR(6) NOT NULL,        
+       ACNT_NUM                       DECIMAL(10, 0) NOT NULL,    
+       CUST_NAME                      VARCHAR(26) NOT NULL,       
+       DOB                            DATE NOT NULL,              
+       DO_OPENING_ACNT                DATE NOT NULL,              
+       CUST_ADDR                      VARCHAR(43),                
+       CUST_TYPE                      CHAR(1),                    
+       BAL_AMOUNT                     DECIMAL(8, 0)               
+     ) END-EXEC.                                                  
+******************************************************************
+* COBOL DECLARATION FOR TABLE WPR061.CUSTOMERS_TB                *
+******************************************************************
+ 01  DCLCUSTOMERS-TB.                                            
+     10 HV-C-USER-ID.                                            
+*                       C_USER_ID LENGTH                         
+        49 HV-C-USER-ID-LEN                                      
+           PIC S9(4) USAGE COMP.                                 
+*                       C_USER_ID                                
+        49 HV-C-USER-ID-TEXT                                     
+           PIC X(6).                                             
+     10 HV-C-PASS.                                               
+*                       C_PASS LENGTH                            
+        49 HV-C-PASS-LEN     PIC S9(4) USAGE COMP.               
+*                       C_PASS                                   
+        49 HV-C-PASS-TEXT    PIC X(6).                           
+*                       ACNT_NUM                                 
+     10 HV-ACNT-NUM          PIC S9(10)V USAGE COMP-3.           
+     10 HV-CUST-NAME.                                            
+*                       CUST_NAME LENGTH                         
+        49 HV-CUST-NAME-LEN                                      
+           PIC S9(4) USAGE COMP.                                 
+*                       CUST_NAME                                
+        49 HV-CUST-NAME-TEXT                                     
+           PIC X(26).                                            
+*                       DOB                                      
+     10 HV-DOB               PIC X(10).                          
+*                       DO_OPENING_ACNT                          
+     10 HV-DO-OPENING-ACNT   PIC X(10).                           
+     10 HV-CUST-ADDR.                                             
+*                       CUST_ADDR LENGTH                          
+        49 HV-CUST-ADDR-LEN                                       
+           PIC S9(4) USAGE COMP.                                  
+*                       CUST_ADDR                                 
+        49 HV-CUST-ADDR-TEXT                                      
+           PIC X(43).                                             
+*                       CUST_TYPE                                 
+     10 HV-CUST-TYPE         PIC X(1).                            
+*                       BAL_AMOUNT                                
+     10 HV-BAL-AMOUNT        PIC S9(8)V USAGE COMP-3.             
+******************************************************************
+* THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 9       *
+******************************************************************

@@ -1,0 +1,218 @@
+********************************* Top of Data **************************
+      *****************************                                     
+       IDENTIFICATION DIVISION.                                         
+      *****************************                                     
+       PROGRAM-ID. COBEMP.                                              
+       DATE-WRITTEN. 02/05/2022.                                        
+       DATE-COMPILED. 04/05/2022.                                       
+      ******************************************************************
+      *       PROLOGUE.                                                 
+      *       PROGRAM NAME        :         COBEMP                      
+      *       PROJECT NAME        :         BANKING SYSTEM              
+      *       AUTHOR              :         GROUP 6                     
+      *       DATE OF CREATION    :         22/05/2022                  
+      *       FUNCTION            :         LOGIN OR VALIDATION         
+      *       TRANSACTION ID USED :         BVR2                        
+      *                                                                 
+      *       MAP USED            :         VALDM                       
+      *       DCLGEN              :         CUSTB , UCETB               
+      ******************************************************************
+      *****************************                                     
+       DATA DIVISION.                                                   
+      *****************************                                     
+      *****************************                                     
+       WORKING-STORAGE SECTION.                                         
+      *****************************                                     
+           COPY VALDM.                                                  
+           COPY DFHAID.                                                 
+           EXEC SQL                                                     
+               INCLUDE SQLCA                                            
+           END-EXEC.                                                    
+           EXEC SQL                                                     
+               INCLUDE UCETB                                            
+           END-EXEC.                                                    
+           EXEC SQL                                                     
+               INCLUDE CUSTB                                            
+           END-EXEC.                                                    
+       77 WS-DTM PIC S9(15) COMP.                                       
+       77 WS-DT  PIC X(10).                                             
+       77 WS-TM  PIC X(8).                                              
+       01 WS-DATA.                                                      
+          02 WS-INI  PIC X(1) VALUE '@'.                                
+          02 WS-ACNT PIC X(10).                                         
+       77 WS-ID PIC X(8).                                               
+       01 WS-COMMAREA.                                                  
+          03 WS-CA PIC X(1).                                            
+          03 WS-OPT PIC X(1).                                           
+      *****************************                                     
+       LINKAGE SECTION.                                                 
+      *****************************                                     
+       01 DFHCOMMAREA PIC X(2).                                         
+      *****************************                                     
+       PROCEDURE DIVISION.                                              
+      *****************************                                     
+      *-------------------------                                        
+       0565-MAIN-PARA.                                                  
+      *-------------------------                                        
+           MOVE LOW-VALUES TO ULOGINO.                                  
+           MOVE DFHCOMMAREA TO WS-COMMAREA.                             
+           IF WS-CA = '@'                                               
+              PERFORM 0628-SEND-PARA                                    
+           ELSE                                                         
+              PERFORM 1208-RECEIVE-PARA                                 
+              PERFORM 0628-SEND-PARA                                    
+           END-IF.                                                      
+           PERFORM 0603-MAIN-PARA-EXIT.                                 
+      *-------------------------                                        
+       0603-MAIN-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       0607-DATE-PARA.                                                  
+      *-------------------------                                        
+           EXEC CICS                                                    
+               ASKTIME                                                  
+               ABSTIME(WS-DTM)                                          
+           END-EXEC.                                                    
+           EXEC CICS                                                    
+               FORMATTIME                                               
+               ABSTIME(WS-DTM)                                          
+               DATESEP('-')                                             
+               YYYYMMDD(WS-DT)                                          
+               TIMESEP(':')                                             
+               TIME(WS-TM)                                              
+           END-EXEC.                                                    
+           MOVE WS-DT TO DATEO.                                         
+           MOVE WS-TM TO TIMEO.                                         
+      *-------------------------                                        
+       0624-DATE-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       0628-SEND-PARA.                                                  
+      *-------------------------                                        
+           IF WS-OPT = '1'                                              
+             MOVE 'EMPLOYEE VALIDATION MENU' TO HEADVO                  
+           END-IF.                                                      
+           IF WS-OPT = '2'                                              
+             MOVE 'CUSTOMER VALIDATION MENU' TO HEADVO                  
+           END-IF.                                                      
+           PERFORM 0607-DATE-PARA THRU 0624-DATE-PARA-EXIT.             
+           EXEC CICS                                                    
+               SEND MAP('ULOGIN')                                       
+                    MAPSET('VALDM')                                     
+                    FROM(ULOGINO)                                       
+                    ERASE                                               
+                    FREEKB                                              
+           END-EXEC.                                                    
+           MOVE ' ' TO WS-CA.                                           
+           EXEC CICS                                                    
+               RETURN                                                   
+               TRANSID('BVR2')                                          
+               COMMAREA(WS-COMMAREA)                                    
+           END-EXEC.                                                    
+           PERFORM 1204-SEND-PARA-EXIT.                                 
+      *-------------------------                                        
+       1204-SEND-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1208-RECEIVE-PARA.                                               
+      *-------------------------                                        
+           EXEC CICS                                                    
+               RECEIVE MAP('ULOGIN')                                    
+                       MAPSET('VALDM')                                  
+                       INTO(ULOGINI)                                    
+           END-EXEC.                                                    
+           EVALUATE EIBAID                                              
+              WHEN DFHPF5                                               
+                  MOVE LOW-VALUES TO ULOGINO                            
+              WHEN DFHPF4                                               
+                  MOVE 'COHMSCR' TO WS-ID                               
+                  PERFORM 2000-TRANSFER-PARA                            
+              WHEN DFHENTER                                             
+                  IF WS-OPT = '1'                                       
+                    PERFORM 1309-EMP-LOG-IN-PARA                        
+                  END-IF                                                
+                  IF WS-OPT = '2'                                       
+                    PERFORM 1364-CUS-LOG-IN-PARA                        
+                  END-IF                                                
+              WHEN OTHER                                                
+                  MOVE 'ENTER CORRECT PF KEYS' TO MSGO                  
+           END-EVALUATE.                                                
+           PERFORM 1268-RECEIVE-PARA-EXIT.                              
+      *-------------------------                                        
+       1268-RECEIVE-PARA-EXIT.                                          
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1309-EMP-LOG-IN-PARA.                                            
+      *-------------------------                                        
+           MOVE USERI TO HV-U-USER-ID.                                  
+           MOVE PASSI TO HV-U-PASS.                                     
+           EXEC SQL                                                     
+               SELECT U_USER_ID, U_PASS                                 
+               INTO :HV-U-USER-ID, :HV-U-PASS                           
+               FROM WPR061.P_TABLE                                      
+               WHERE U_USER_ID = :HV-U-USER-ID AND                      
+               U_PASS = :HV-U-PASS AND U_STATUS = 'E'                   
+           END-EXEC.                                                    
+           EVALUATE SQLCODE                                             
+               WHEN 0                                                   
+                   MOVE 'OPTPGM' TO WS-ID                               
+                   PERFORM 2000-TRANSFER-PARA                           
+               WHEN 100                                                 
+                   MOVE 'ENTER CORRECT USERID OR PASSWORD' TO MSGO      
+               WHEN OTHER                                               
+                   MOVE SQLCODE TO MSGO                                 
+           END-EVALUATE.                                                
+           PERFORM 1360-EMP-LOG-IN-PARA-EXIT.                           
+      *-------------------------                                        
+       1360-EMP-LOG-IN-PARA-EXIT.                                       
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1364-CUS-LOG-IN-PARA.                                            
+      *-------------------------                                        
+           MOVE USERI TO HV-C-USER-ID-TEXT.                             
+           MOVE 6 TO HV-C-USER-ID-LEN.                                  
+           MOVE PASSI TO HV-C-PASS-TEXT.                                
+           MOVE 6 TO HV-C-PASS-LEN.                                     
+           EXEC SQL                                                     
+               SELECT C_USER_ID, C_PASS, ACNT_NUM                       
+               INTO :HV-C-USER-ID, :HV-C-PASS, :HV-ACNT-NUM             
+               FROM WPR061.CUSTOMERS_TB                                 
+               WHERE C_USER_ID = :HV-C-USER-ID AND                      
+               C_PASS = :HV-C-PASS                                      
+           END-EXEC.                                                    
+           EVALUATE SQLCODE                                             
+               WHEN 0                                                   
+                   MOVE 'UPUSER' TO WS-ID                               
+                   MOVE HV-ACNT-NUM TO WS-ACNT                          
+                   PERFORM 2500-CUST-TRANSFER-PARA                      
+               WHEN 100                                                 
+                   MOVE 'ENTER CORRECT USERID OR PASSWORD' TO MSGO      
+               WHEN OTHER                                               
+                   MOVE SQLCODE TO MSGO                                 
+           END-EVALUATE.                                                
+           PERFORM 1920-CUS-LOG-IN-PARA-EXIT.                           
+      *-------------------------                                        
+       1920-CUS-LOG-IN-PARA-EXIT.                                       
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       2000-TRANSFER-PARA.                                              
+      *-------------------------                                        
+           EXEC CICS  XCTL                                              
+               PROGRAM(WS-ID)                                           
+           END-EXEC.                                                    
+      *-------------------------                                        
+       2500-CUST-TRANSFER-PARA.                                         
+      *-------------------------                                        
+           EXEC CICS XCTL                                               
+               PROGRAM(WS-ID)                                           
+               COMMAREA(WS-DATA)                                        
+           END-EXEC.                                                    
+      ******************************************************************
+      *                          END OF PROGRAM                         
+      ******************************************************************

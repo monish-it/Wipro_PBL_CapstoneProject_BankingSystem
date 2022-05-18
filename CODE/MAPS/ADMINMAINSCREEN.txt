@@ -1,0 +1,41 @@
+MAINSC DFHMSD  TYPE=&SYSPARM,LANG=COBOL,MODE=INOUT,CTRL=FREEKB,        *
+               STORAGE=AUTO,TIOAPFX=YES                                 
+MAINM  DFHMDI  SIZE=(24,80),LINE=1,COLUMN=1                             
+       DFHMDF  POS=(1,60),INITIAL='DATE :',LENGTH=6,ATTRB=PROT          
+DATE   DFHMDF  POS=(1,67),INITIAL='__________',LENGTH=10,              *
+               ATTRB=PROT,PICOUT='X(10)'                                
+       DFHMDF  POS=(3,60),INITIAL='TIME :',LENGTH=6,ATTRB=PROT          
+TIME   DFHMDF  POS=(3,67),INITIAL='__________',LENGTH=8,               *
+               ATTRB=PROT,PICOUT='X(8)'                                 
+       DFHMDF  POS=(1,30),INITIAL='BANKING SYSTEM',                    *
+               LENGTH=25,ATTRB=PROT                                     
+       DFHMDF  POS=(2,30),INITIAL='**************',                    *
+               LENGTH=25,ATTRB=PROT                                     
+       DFHMDF  POS=(4,33),INITIAL='MAIN MENU',                         *
+               LENGTH=9,ATTRB=PROT                                      
+       DFHMDF  POS=(6,10),INITIAL='OPTIONS',LENGTH=7,                  *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(8,20),INITIAL='1. ADD NEW CUSTOMER ACCOUNT',       *
+               LENGTH=27,ATTRB=PROT                                     
+       DFHMDF  POS=(10,20),INITIAL='2. DELETE CUSTOMER ACCOUNT',       *
+               LENGTH=26,ATTRB=PROT                                     
+       DFHMDF  POS=(12,17),INITIAL='ENTER OPTION NUMBER:',             *
+               LENGTH=20,ATTRB=PROT                                     
+OPTN   DFHMDF  POS=(12,41),INITIAL='_',                                *
+               LENGTH=1,ATTRB=(IC,UNPROT,FSET),PICIN='9(1)'             
+       DFHMDF  POS=(12,43),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+       DFHMDF  POS=(15,29),INITIAL='PRESS ENTER TO SELECT',            *
+               LENGTH=22,ATTRB=PROT                                     
+MSG    DFHMDF  POS=(21,10),INITIAL='',                                 *
+               LENGTH=40,ATTRB=PROT,PICOUT='X(40)'                      
+       DFHMDF  POS=(23,10),INITIAL='F6 :',LENGTH=4,                    *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(23,15),INITIAL='LOG OUT',LENGTH=7,                 *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(23,62),INITIAL='F5 :',LENGTH=4,                    *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(23,67),INITIAL='CLEAR',LENGTH=5,                   *
+               ATTRB=PROT                                               
+       DFHMSD  TYPE=FINAL                                               
+               END                                                      

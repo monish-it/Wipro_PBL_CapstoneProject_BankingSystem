@@ -1,0 +1,28 @@
+******************************************************************
+* DCLGEN TABLE(WPR061.P_TABLE)                                   *
+*        LIBRARY(WPR061.FEB21.PROJ.DCLGEN(UCETB))                *
+*        ACTION(REPLACE)                                         *
+*        LANGUAGE(COBOL)                                         *
+*        NAMES(HV-)                                              *
+*        QUOTE                                                   *
+*        COLSUFFIX(YES)                                          *
+* ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+******************************************************************
+     EXEC SQL DECLARE WPR061.P_TABLE TABLE                        
+     ( U_USER_ID                      CHAR(6) NOT NULL,           
+       U_PASS                         CHAR(6) NOT NULL,           
+       U_STATUS                       CHAR(1) NOT NULL            
+     ) END-EXEC.                                                  
+******************************************************************
+* COBOL DECLARATION FOR TABLE WPR061.P_TABLE                     *
+******************************************************************
+ 01  DCLP-TABLE.                                                  
+*                       U_USER_ID                                 
+     10 HV-U-USER-ID         PIC X(6).                            
+*                       U_PASS                                    
+     10 HV-U-PASS            PIC X(6).                            
+*                       U_STATUS         
+     10 HV-U-STATUS          PIC X(1).                            
+******************************************************************
+* THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 3       *
+******************************************************************                         

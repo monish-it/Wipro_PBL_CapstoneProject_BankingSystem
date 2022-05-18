@@ -1,0 +1,206 @@
+      *****************************                                     
+       IDENTIFICATION DIVISION.                                         
+      *****************************                                     
+       PROGRAM-ID. DELUSER.   
+       AUTHOR. GRP 6.                                            
+       DATE-WRITTEN. 02/05/2022.                                        
+       DATE-COMPILED. 04/05/2022.                                       
+      ******************************************************************
+      *       PROLOGUE.                                                 
+      *       PROGRAM NAME        :         DELUSER                     
+      *       PROJECT NAME        :         BANKING SYSTEM              
+      *       AUTHOR              :         GROUP 6                     
+      *       DATE OF CREATION    :         22/05/2022                  
+      *       FUNCTION            :         TO DELETE CUSTOMER          
+      *       TRANSACTION ID USED :         BVR6                        
+      *                                                                 
+      *       MAP USED            :         DELSCR                      
+      *       DCLGEN              :         CUSTB , UCETB               
+      ***************************************************************** 
+      *****************************                                     
+       DATA DIVISION.                                                   
+      *****************************                                     
+      *****************************                                     
+       WORKING-STORAGE SECTION.                                         
+      *****************************                                     
+           COPY DELSCR.                                                 
+           COPY DFHAID.                                                 
+           EXEC SQL                                                     
+               INCLUDE SQLCA                                            
+           END-EXEC.                                                    
+           EXEC SQL                                                     
+               INCLUDE CUSTB                                            
+           END-EXEC.                                                    
+           EXEC SQL                                                     
+               INCLUDE UCETB                                            
+           END-EXEC.                                                    
+       77 WS-DTM PIC S9(15) COMP.                                       
+       77 WS-DT  PIC X(10).                                             
+       77 WS-TM  PIC X(8).                                              
+       77 WS-CA  PIC X(10).                                             
+      *****************************                                     
+       PROCEDURE DIVISION.                                              
+      *****************************                                     
+      *-------------------------                                        
+       0580-MAIN-PARA.                                                  
+      *-------------------------                                        
+           MOVE LOW-VALUES TO DELCSO.                                   
+           IF EIBCALEN = 0                                              
+              PERFORM 0633-SEND-PARA                                    
+           ELSE                                                         
+              PERFORM 1209-RECEIVE-PARA                                
+              PERFORM 1221-CHECK-PARA                                  
+              PERFORM 0633-SEND-PARA                                   
+           END-IF.                                                     
+           PERFORM 0609-MAIN-PARA-EXIT.                                
+      *-------------------------                                       
+       0609-MAIN-PARA-EXIT.                                            
+           EXIT.                                                       
+      *-------------------------                                       
+      *-------------------------                                       
+       0613-DATE-PARA.                                                 
+      *-------------------------                                       
+           EXEC CICS                                                   
+               ASKTIME                                                 
+               ABSTIME(WS-DTM)                                         
+           END-EXEC.                                                   
+           EXEC CICS                                                   
+               FORMATTIME                                              
+               ABSTIME(WS-DTM)                                         
+               DATESEP('-')                                            
+               YYYYMMDD(WS-DT)                                         
+               TIMESEP(':')                                            
+               TIME(WS-TM)                                             
+           END-EXEC.                                                   
+           PERFORM 0629-DATE-PARA-EXIT.                               
+      *-------------------------                                        
+       0629-DATE-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       0633-SEND-PARA.                                                  
+      *-------------------------                                        
+           PERFORM 0613-DATE-PARA THRU 0629-DATE-PARA-EXIT.             
+           MOVE WS-DT TO DATEO.                                         
+           MOVE WS-TM TO TIMEO.                                         
+           EXEC CICS                                                    
+               SEND MAP('DELCS')                                        
+                    MAPSET('DELSCR')                                    
+                    FROM(DELCSO)                                        
+                    ERASE                                               
+                    FREEKB                                              
+           END-EXEC.                                                    
+           MOVE 'HI' TO WS-CA.                                          
+           EXEC CICS                                                    
+               RETURN                                                   
+               TRANSID('BVR6')                                          
+               COMMAREA(WS-CA)                                          
+           END-EXEC.                                                    
+           PERFORM 1205-SEND-PARA-EXIT.                                 
+      *-------------------------                                        
+       1205-SEND-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1209-RECEIVE-PARA.                                               
+      *-------------------------                                        
+           EXEC CICS                                                    
+               RECEIVE MAP('DELCS')                                     
+                    MAPSET('DELSCR')                                    
+                    INTO(DELCSI)                                        
+           END-EXEC.                                                    
+           PERFORM 1218-RECEIVE-PARA-EXIT.                              
+      *-------------------------                                        
+       1218-RECEIVE-PARA-EXIT.                                          
+           EXIT.                                                        
+      *-------------------------                                        
+       1221-CHECK-PARA.                                                 
+      *-------------------------                                        
+           EVALUATE EIBAID                                              
+              WHEN DFHPF5                                               
+                  MOVE LOW-VALUES TO DELCSO                             
+              WHEN DFHPF6                                               
+                  PERFORM 2000-DELETE-PARA                              
+              WHEN DFHPF4                                               
+                  PERFORM 1257-TRANSFER-PARA                            
+              WHEN DFHENTER                                             
+                  PERFORM 1264-GET-INFO-PARA                            
+              WHEN OTHER                                                
+                  MOVE 'ENTER CORRECT PF KEYS' TO MSGO                  
+           END-EVALUATE.                                                
+           PERFORM 1253-CHECK-PARA-EXIT.                                
+      *-------------------------                                        
+       1253-CHECK-PARA-EXIT.                                            
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       1257-TRANSFER-PARA.                                              
+      *-------------------------                                        
+           EXEC CICS                                                    
+               RETURN TRANSID('BVR3')                                   
+           END-EXEC.                                                    
+      *-------------------------                                        
+       1264-GET-INFO-PARA.                                              
+      *-------------------------                                        
+           MOVE ACCNI TO HV-ACNT-NUM.                                   
+           EXEC SQL                                                     
+              SELECT TO_CHAR(DOB,'DD/MM/YY'),                           
+                     CUST_NAME,                                         
+                     ACNT_NUM,                                          
+                     CUST_TYPE,                                         
+                     C_USER_ID,                                         
+                     C_PASS                                             
+                     INTO :HV-DOB, :HV-CUST-NAME, :HV-ACNT-NUM,         
+                          :HV-CUST-TYPE, :HV-C-USER-ID, :HV-C-PASS      
+              FROM WPR061.CUSTOMERS_TB WHERE ACNT_NUM = :HV-ACNT-NUM    
+           END-EXEC.                                                    
+           IF SQLCODE = 0                                               
+              MOVE HV-ACNT-NUM TO ACCNO                                 
+              MOVE HV-DOB(1:8) TO DOBO                                  
+              MOVE HV-CUST-NAME-TEXT(1:8) TO FIRNO                      
+              INSPECT FIRNO REPLACING ALL ' ' BY '_'                    
+              MOVE HV-CUST-NAME-TEXT(10:8) TO MIDNO                     
+              INSPECT MIDNO REPLACING ALL ' ' BY '_'                    
+              MOVE HV-CUST-NAME-TEXT(19:8) TO LASTNO                    
+              INSPECT LASTNO REPLACING ALL ' ' BY '_'                   
+              MOVE HV-CUST-TYPE TO CUSTO                                
+           ELSE                                                         
+              MOVE 'ACCOUNT DOES NOT EXIST!' TO MSGO                    
+           END-IF.                                                      
+           PERFORM 1920-GET-INFO-PARA-EXIT.                             
+      *-------------------------                                        
+       1920-GET-INFO-PARA-EXIT.                                         
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       2000-DELETE-PARA.                                                
+      *-------------------------                                        
+           MOVE ACCNI TO HV-ACNT-NUM.                                   
+           MOVE HV-C-USER-ID-TEXT TO HV-U-USER-ID.                      
+           MOVE HV-C-PASS-TEXT TO HV-U-PASS.                            
+           IF HV-ACNT-NUM IS NOT NUMERIC                                
+             MOVE 'PROVIDE CORRECT ACCOUNT NUMBER' TO MSGO              
+             PERFORM 0633-SEND-PARA                                     
+           END-IF.                                                      
+           EXEC SQL                                                     
+               DELETE FROM WPR061.CUSTOMERS_TB                          
+               WHERE ACNT_NUM = :HV-ACNT-NUM                            
+           END-EXEC.                                                    
+           EXEC SQL                                                     
+               DELETE FROM WPR061.P_TABLE                               
+               WHERE U_USER_ID = :HV-U-USER-ID AND U_PASS = :HV-U-PASS  
+           END-EXEC.                                                    
+           IF SQLCODE = 0                                               
+              MOVE LOW-VALUES TO DELCSO                                 
+              MOVE 'ACCOUNT DELETED!!' TO MSGO                          
+           ELSE                                                         
+              MOVE 'ACCOUNT DOES NOT EXIST!' TO MSGO                    
+           END-IF.                                                      
+           PERFORM 2080-DELETE-PARA-EXIT.                               
+      *-------------------------                                        
+       2080-DELETE-PARA-EXIT.                                           
+           EXIT.                                                        
+      *-------------------------                                        
+      ******************************************************************
+      *                          END OF PROGRAM                        *
+      ******************************************************************

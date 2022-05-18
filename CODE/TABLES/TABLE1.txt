@@ -1,0 +1,6 @@
+CREATE TABLE P_TABLE                   
+ (                                     
+  U_USER_ID CHAR(6) NOT NULL,          
+  U_PASS CHAR(6) NOT NULL,             
+  U_STATUS CHAR NOT NULL               
+ )IN WPR061DB.WPR061TS;                

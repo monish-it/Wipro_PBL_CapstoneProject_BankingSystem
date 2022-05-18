@@ -1,0 +1,162 @@
+      *****************************                                     
+       IDENTIFICATION DIVISION.                                         
+      *****************************                                     
+       PROGRAM-ID. COHMSCR.                                             
+       AUTHOR. GRP 6.                                                   
+       DATE-WRITTEN. 27-4-22.                                           
+       DATE-COMPILED. 28-4-22.                                          
+      ******************************************************************
+      *       PROLOGUE.                                                 
+      *       PROGRAM NAME        :         COHMSCR                     
+      *       PROJECT NAME        :         BANKING SYSTEM              
+      *       AUTHOR              :         GROUP 6                     
+      *       DATE OF CREATION    :         27/04/2022                  
+      *       FUNCTION            :         TO SHOW CUSTOMER OPTIONS    
+      *       TRANSACTION ID USED :         BVR1                        
+      *                                                                 
+      *       MAP USED            :         HMSCR                       
+      *                                                                 
+      ******************************************************************
+      *****************************                                     
+       DATA DIVISION.                                                   
+      *****************************                                     
+      *****************************                                     
+       WORKING-STORAGE SECTION.                                         
+      *****************************                                     
+           COPY HMSCR.                                                  
+           COPY DFHAID.                                                 
+       77 WS-DTM PIC S9(15) COMP.                                       
+       77 WS-DT PIC X(10).                                              
+       77 WS-TM PIC X(8).                                               
+       77 WS-STR PIC X(10).                                             
+       77 WS-CA PIC X(10).                                              
+       01 WS-OPT PIC X(2).                                              
+      *****************************                                     
+       PROCEDURE DIVISION.                                              
+      *****************************                                     
+      *-------------------------                                        
+       1600-MAIN-PARA.                                                  
+      *-------------------------                                        
+           MOVE LOW-VALUES TO  MPHOMO.                                  
+           IF EIBCALEN = 0                                              
+               PERFORM 3800-SEND-PARA                                   
+           ELSE                                                         
+               PERFORM 5500-RECEIVE-PARA                                
+               PERFORM 6100-CHECK-PARA                                  
+               PERFORM 3800-SEND-PARA                                   
+           END-IF.                                                      
+           PERFORM 2430-MAIN-PARA-EXIT.                                 
+      *-------------------------                                        
+       2430-MAIN-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       2500-DATE-PARA.                                                  
+      *-------------------------                                        
+           EXEC CICS                                                    
+               ASKTIME                                                  
+               ABSTIME(WS-DTM)                                          
+           END-EXEC.                                                    
+           EXEC CICS                                                    
+               FORMATTIME                                               
+               ABSTIME(WS-DTM)                                          
+               DATESEP('-')                                             
+               YYYYMMDD(WS-DT)                                          
+               TIMESEP(':')                                             
+               TIME(WS-TM)                                              
+           END-EXEC.                                                    
+      *-------------------------                                        
+       3720-DATE-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       3800-SEND-PARA.                                                  
+      *-------------------------                                        
+           PERFORM 2500-DATE-PARA THRU 3720-DATE-PARA-EXIT.             
+           MOVE WS-DT TO DATEO.                                         
+           MOVE WS-TM TO TIMEO.                                         
+           EXEC CICS                                                    
+               SEND MAP('MPHOM')                                        
+                    MAPSET('HMSCR')                                     
+                    FROM(MPHOMO)                                        
+                    ERASE                                               
+                    FREEKB                                              
+           END-EXEC.                                                    
+           MOVE 'HI' TO WS-CA.                                          
+           EXEC CICS                                                    
+               RETURN                                                   
+               TRANSID('BVR1')                                          
+               COMMAREA(WS-CA)                                          
+           END-EXEC.                                                    
+           PERFORM 5420-SEND-PARA-EXIT.                                 
+      *-------------------------                                        
+       5420-SEND-PARA-EXIT.                                             
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       5500-RECEIVE-PARA.                                               
+      *-------------------------                                        
+           EXEC CICS                                                    
+               RECEIVE MAP('MPHOM')                                     
+                    MAPSET('HMSCR')                                     
+                    INTO(MPHOMI)                                        
+           END-EXEC.                                                    
+           PERFORM 6020-RECEIVE-PARA-EXIT.                              
+      *-------------------------                                        
+       6020-RECEIVE-PARA-EXIT.                                          
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       6100-CHECK-PARA.                                                 
+      *-------------------------                                        
+           EVALUATE EIBAID                                              
+              WHEN DFHPF5                                               
+                  MOVE LOW-VALUES TO OPTNO                              
+              WHEN DFHPF3                                               
+                  PERFORM 8800-EXIT-PARA                                
+              WHEN DFHENTER                                             
+                  IF OPTNI = 1                                          
+                    MOVE '@1' TO WS-OPT                                 
+                    PERFORM 8200-TRANSFER-PARA                          
+                  END-IF                                                
+                  IF OPTNI = 2                                          
+                    MOVE '@2' TO WS-OPT                                 
+                    PERFORM 8200-TRANSFER-PARA                          
+                  END-IF                                                
+                  IF NOT OPTNI = 1 OR OPTNI = 2                         
+                     MOVE 'ENTER VALID OPTION' TO MSGO                  
+                  END-IF                                                
+              WHEN OTHER                                                
+                  MOVE 'ENTER CORRECT PF KEYS' TO MSGO                  
+           END-EVALUATE.                                                
+           PERFORM 8120-CHECK-PARA-EXIT.                                
+      *-------------------------                                        
+       8120-CHECK-PARA-EXIT.                                            
+           EXIT.                                                        
+      *-------------------------                                        
+      *-------------------------                                        
+       8200-TRANSFER-PARA.                                              
+      *-------------------------                                        
+           EXEC CICS                                                    
+               RETURN                                                   
+               TRANSID('BVR2')                                          
+               COMMAREA(WS-OPT)                                         
+           END-EXEC.                                                    
+      *-------------------------                                        
+       8800-EXIT-PARA.                                                  
+      *-------------------------                                        
+           MOVE 'EXIT' TO WS-STR.                                       
+           EXEC CICS                                                    
+               SEND CONTROL                                             
+                    CURSOR(750)                                         
+                    ERASE                                               
+           END-EXEC.                                                    
+           EXEC CICS                                                    
+               SEND FROM (WS-STR)                                       
+           END-EXEC.                                                    
+           EXEC CICS                                                    
+               RETURN                                                   
+           END-EXEC.                                                    
+      ******************************************************************
+      *                          END OF PROGRAM                         
+      ******************************************************************

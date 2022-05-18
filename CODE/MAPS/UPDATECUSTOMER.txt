@@ -1,0 +1,120 @@
+UPDSCR DFHMSD  TYPE=&SYSPARM,LANG=COBOL,MODE=INOUT,CTRL=FREEKB,        *
+               STORAGE=AUTO,TIOAPFX=YES                                 
+UPDCS1 DFHMDI  SIZE=(24,80),LINE=1,COLUMN=1                             
+       DFHMDF  POS=(1,60),INITIAL='DATE :',LENGTH=6,ATTRB=PROT          
+DATE   DFHMDF  POS=(1,67),INITIAL='__________',LENGTH=10,              *
+               ATTRB=PROT,PICOUT='X(10)'                                
+       DFHMDF  POS=(3,60),INITIAL='TIME :',LENGTH=6,ATTRB=PROT          
+TIME   DFHMDF  POS=(3,67),INITIAL='__________',LENGTH=8,               *
+               ATTRB=PROT,PICOUT='X(8)'                                 
+       DFHMDF  POS=(1,30),INITIAL='BANKING SYSTEM',                    *
+               LENGTH=25,ATTRB=PROT                                     
+       DFHMDF  POS=(2,30),INITIAL='**************',                    *
+               LENGTH=25,ATTRB=PROT                                     
+       DFHMDF  POS=(3,29),INITIAL='UPDATE  CUSTOMER',                  *
+               LENGTH=16,ATTRB=PROT                                     
+       DFHMDF  POS=(5,21),INITIAL='ACCOUNT NUMBER     :',LENGTH=20,    *
+               ATTRB=PROT                                               
+ACCN   DFHMDF  POS=(5,43),INITIAL='__________',LENGTH=10,              *
+               ATTRB=PROT,PICOUT='9(10)'                                
+       DFHMDF  POS=(5,54),INITIAL='',LENGTH=1,                         *
+               ATTRB=ASKIP                                              
+       DFHMDF  POS=(6,21),INITIAL='CUSTOMER NAME      :',LENGTH=20,    *
+               ATTRB=PROT                                               
+FISN   DFHMDF  POS=(6,43),INITIAL='________',LENGTH=8,                 *
+               ATTRB=PROT,PICOUT='X(8)'                                 
+MIDN   DFHMDF  POS=(6,52),INITIAL='________',LENGTH=8,                 *
+               ATTRB=PROT,PICOUT='X(8)'                                 
+LASTN  DFHMDF  POS=(6,61),INITIAL='________',LENGTH=8,                 *
+               ATTRB=PROT,PICOUT='X(8)'                                 
+       DFHMDF  POS=(7,21),INITIAL='DATE OF BIRTH      :',LENGTH=20,    *
+               ATTRB=PROT                                               
+DOB    DFHMDF  POS=(7,43),INITIAL='________',LENGTH=8,                 *
+               ATTRB=PROT,PICOUT='X(8)'                                 
+       DFHMDF  POS=(7,56),INITIAL='(MM/DD/YY)',LENGTH=10,              *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(8,21),INITIAL='DATE OF OPENING ACC:',LENGTH=20,    *
+               ATTRB=PROT                                               
+DOA    DFHMDF  POS=(8,43),INITIAL='________',LENGTH=8,                 *
+               ATTRB=PROT,PICOUT='X(8)'                                 
+       DFHMDF  POS=(8,56),INITIAL='(MM/DD/YY)',LENGTH=10,              *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(9,21),INITIAL='CUSTOMER ADDRESS   :',LENGTH=20,    *
+               ATTRB=PROT                                               
+CUSA   DFHMDF  POS=(9,43),INITIAL='__________',LENGTH=10,              *
+               ATTRB=(IC,UNPROT,FSET),PICIN='X(10)'                     
+       DFHMDF  POS=(9,54),INITIAL='',LENGTH=1,                         *
+               ATTRB=ASKIP                                              
+ADDL1  DFHMDF  POS=(10,43),INITIAL='__________',LENGTH=10,             *
+               ATTRB=(UNPROT,FSET),PICIN='X(10)'                        
+       DFHMDF  POS=(10,54),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+ADDL2  DFHMDF  POS=(11,43),INITIAL='__________',LENGTH=10,             *
+               ATTRB=(UNPROT,FSET),PICIN='X(10)'                        
+       DFHMDF  POS=(11,54),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+ADDL3  DFHMDF  POS=(12,43),INITIAL='__________',LENGTH=10,             *
+               ATTRB=(UNPROT,FSET),PICIN='X(10)'                        
+       DFHMDF  POS=(12,54),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+       DFHMDF  POS=(13,21),INITIAL='CUSTOMER TYPE      :',LENGTH=20,   *
+               ATTRB=PROT                                               
+CUST   DFHMDF  POS=(13,43),INITIAL='_',LENGTH=1,                       *
+               ATTRB=PROT,PICOUT='X(1)'                                 
+       DFHMDF  POS=(13,45),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+       DFHMDF  POS=(13,56),INITIAL='ENTER R-RETAIL',LENGTH=14,         *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(14,56),INITIAL='ENTER C-CORPORATE',LENGTH=17,      *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(15,21),INITIAL='BALANCE            :',LENGTH=20,   *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(15,43),INITIAL='$',LENGTH=1,                       *
+               ATTRB=PROT                                               
+BLNC   DFHMDF  POS=(15,45),INITIAL='________',LENGTH=8,                *
+               ATTRB=PROT,PICOUT='9(8)'                                 
+       DFHMDF  POS=(17,18),                                            *
+               INITIAL='*****ENTER EITHER DEPOSIT OR WITHDRAWAL*****', *
+               LENGTH=44,ATTRB=PROT                                     
+       DFHMDF  POS=(18,21),INITIAL='DEPOSIT            :',LENGTH=20,   *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(18,43),INITIAL='$',LENGTH=1,                       *
+               ATTRB=PROT                                               
+DEPT   DFHMDF  POS=(18,45),INITIAL='00000000',LENGTH=8,                *
+               ATTRB=(UNPROT,NUM),PICIN='9(8)'                          
+       DFHMDF  POS=(18,54),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+       DFHMDF  POS=(19,21),INITIAL='WITHDRAW           :',LENGTH=20,   *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(19,43),INITIAL='$',LENGTH=1,                       *
+               ATTRB=PROT                                               
+WITH   DFHMDF  POS=(19,45),INITIAL='00000000',LENGTH=8,                *
+               ATTRB=(UNPROT,NUM),PICIN='9(8)'                          
+       DFHMDF  POS=(19,54),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+MSG    DFHMDF  POS=(21,10),INITIAL='',LENGTH=40,                       *
+               ATTRB=PROT,PICOUT='X(40)'                                
+MSG1   DFHMDF  POS=(22,16),INITIAL='',LENGTH=40,                       *
+               ATTRB=PROT,PICOUT='X(40)'                                
+       DFHMDF  POS=(23,10),INITIAL='F1 :',LENGTH=4,                    *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(23,15),INITIAL='UPDATE ADDRESS',LENGTH=14,         *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(23,42),INITIAL='F9 :',LENGTH=4,                    *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(23,47),INITIAL='DEPOSIT OR WITHDRAWAL',LENGTH=21,  *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(24,10),INITIAL='F5 :',LENGTH=4,                    *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(24,15),INITIAL='CLEAR',LENGTH=5,                   *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(24,33),INITIAL='F6 :',LENGTH=4,                    *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(24,38),INITIAL='GET DETAIL',LENGTH=10,             *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(24,57),INITIAL='F4 :',LENGTH=4,                    *
+               ATTRB=PROT                                               
+       DFHMDF  POS=(24,62),INITIAL='LOGOUT',LENGTH=6,                  *
+               ATTRB=PROT                                               
+       DFHMSD  TYPE=FINAL                                               
+               END                                                      

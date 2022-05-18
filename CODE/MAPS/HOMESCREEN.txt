@@ -1,0 +1,32 @@
+HMSCR  DFHMSD  TYPE=&SYSPARM,LANG=COBOL,MODE=INOUT,CTRL=FREEKB,        *
+               STORAGE=AUTO,TIOAPFX=YES                                 
+MPHOM  DFHMDI  SIZE=(24,80),LINE=1,COLUMN=1                             
+       DFHMDF  POS=(1,60),INITIAL='DATE :',LENGTH=6,ATTRB=PROT          
+DATE   DFHMDF  POS=(1,67),INITIAL='__________',LENGTH=10,              *
+               ATTRB=PROT,PICOUT='X(10)'                                
+       DFHMDF  POS=(3,60),INITIAL='TIME :',LENGTH=6,ATTRB=PROT          
+TIME   DFHMDF  POS=(3,67),INITIAL='__________',LENGTH=8,               *
+               ATTRB=PROT,PICOUT='X(8)'                                 
+       DFHMDF  POS=(2,23),INITIAL='WELCOME TO ABC BANK OF INDIA',      *
+               LENGTH=28,ATTRB=PROT                                     
+       DFHMDF  POS=(3,23),INITIAL='****************************',      *
+               LENGTH=28,ATTRB=PROT                                     
+       DFHMDF  POS=(5,31),INITIAL='OPTION MENU',LENGTH=14,ATTRB=PROT    
+       DFHMDF  POS=(7,15),INITIAL='OPTIONS',LENGTH=7,ATTRB=PROT         
+       DFHMDF  POS=(10,25),INITIAL='1. EMPLOYEE',LENGTH=15,ATTRB=PROT   
+       DFHMDF  POS=(12,25),INITIAL='2. CUSTOMER',LENGTH=15,ATTRB=PROT   
+       DFHMDF  POS=(16,21),INITIAL='ENTER OPTION NUMBER: ',LENGTH=21,  *
+               ATTRB=PROT                                               
+OPTN   DFHMDF  POS=(16,43),INITIAL='_',LENGTH=1,ATTRB=(IC,UNPROT,FSET),*
+               PICIN='9(1)'                                             
+       DFHMDF  POS=(16,45),INITIAL='',LENGTH=1,                        *
+               ATTRB=ASKIP                                              
+MSG    DFHMDF  POS=(18,30),INITIAL='',LENGTH=40,ATTRB=PROT,            *
+DSLIST    WPR061.FEB21.PROJ.PGM(HMSCR) - 01.25       Line 00000025 Col 
+              PICOUT='X(40)'                                           
+      DFHMDF  POS=(22,8),INITIAL='F3:EXIT',LENGTH=8,ATTRB=PROT         
+      DFHMDF  POS=(22,32),INITIAL='PRESS ENTER TO SELECT',LENGTH=21,   *
+              ATTRB=PROT                                               
+      DFHMDF  POS=(22,70),INITIAL='F5:CLEAR',LENGTH=10,ATTRB=PROT      
+      DFHMSD  TYPE=FINAL                                               
+              END                                                      
